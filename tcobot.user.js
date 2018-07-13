@@ -2,47 +2,54 @@
 // @name        t.co privacy script
 // @namespace   https://tco.bot.nu
 // @include     https://twitter.com/*
-// @include     https://t.co/*
 // @version     1.0
 // @grant       none
 // ==/UserScript==
 
-// Thanks to https://github.com/tony-o/t.co-bypass
-// for the basic idea behind this script.
-
-// If the script isn't replacing URLs for you,
-// it's probably because of a Firefox bug.
-// Discussion / workaround: https://github.com/violentmonkey/violentmonkey/issues/408
-
 var tcobot = "https://tco.bot.nu"
 
+function opentco(event) {
+  console.log("fuck");
+  event.stopPropagation();
+  var url = this.parentElement.attributes['data-card-url'].textContent;
+  url = url.replace("https://t.co", tcobot);
+  window.open(url, '_blank');
+  return false;
+}
+
 var mut = new MutationObserver(function(mutations) {
-  // first attempt to work around 
-  // https://github.com/greasemonkey/greasemonkey/issues/2574
-  var frames = document.body.getElementsByTagName("iframe");
-  for (var i = 0; i < frames.length; i++) {
-    var frame = frames[i];
-    if (frame == null) {
-      continue;
-    }
-    let embed = document.createElement('embed');
-    for (var att, i = 0, atts = frame.attributes, n = atts.length; i < n; i++){
-      att = atts[i];
-      embed.setAttribute(att.nodeName,att.nodeValue);
-    }
-    frame.parentElement.replaceChild(embed, frame);
-  }
-    
+  // replace text links with good links
   var links = document.body.getElementsByTagName("a");
   for (var i = 0; i < links.length; i++) {
     var link = links[i];
-    if (link.getAttribute("class") !== null && link.getAttribute("class").indexOf("twitter-atreply") > -1) {
-      continue;
-    }
-
-    if (link.href && link.href.indexOf("://t.co/") > -1) {
+    if (link.href && link.href.includes("://t.co/")) {
       link.href = link.href.replace("https://t.co", tcobot);
     }
+  };
+  
+  // obscure iframe links with good links
+  var cards = document.body.getElementsByClassName("js-macaw-cards-iframe-container");
+  for (var i = 0; i < cards.length; i++) {
+    var card = cards[i];
+    if (card.children.length != 1 || card.children[0].tagName != "IFRAME") {
+      continue;
+    }
+    
+    var modal = document.createElement('a');
+    modal.style.display = "block";
+    modal.style.width = "100%";
+    modal.style.height = "100%";
+    modal.style.position = "absolute";
+    modal.style.left = 0;
+    modal.style.top = 0;
+    modal.style.zIndex = 1;
+    
+    var url = card.attributes['data-card-url'].textContent
+    url = url.replace("https://t.co", tcobot);
+    modal.setAttribute("href", url);
+    
+    card.style.position = "relative";
+    card.appendChild(modal);
   };
 });
 
@@ -52,4 +59,3 @@ var config = {
 };
 
 mut.observe(document.body, config);
-
