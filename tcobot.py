@@ -30,3 +30,8 @@ def get(tcourl):
                 abort(404)
     else:
         abort(404)
+
+@app.route("/favicon.ico")
+def favicon():
+    abort(404)
+
