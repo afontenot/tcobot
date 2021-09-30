@@ -1,3 +1,4 @@
+import re
 import requests
 
 from flask import Flask, abort, redirect
@@ -10,8 +11,8 @@ ua = {'User-Agent': 'HTTPie/0.9.9'}
 
 @app.route("/<tcourl>")
 def get(tcourl):
-    print(tcourl, len(tcourl))
-    if len(tcourl) > 8 and len(tcourl) < 12:
+    if len(tcourl) == 10 and re.search('\W', tcourl) == None:
+        print(tcourl, len(tcourl))
         if tcourl in urls:
             url = urls[tcourl]
             if url == "404":
