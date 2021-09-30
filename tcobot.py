@@ -8,7 +8,7 @@ from urllib.parse import urlencode, urlunparse, urlparse, parse_qs
 app = Flask(__name__)
 urls = SqliteDict('./urls.sqlite', autocommit=True)
 
-ua = {'User-Agent': 'HTTPie/0.9.9'}
+ua = {'User-Agent': "HTTPie/2.5.0"}
 
 strip_params = ["utm_source", "utm_medium", "utm_term", "utm_content", "utm_campaign", 
                 "utm_reader", "utm_place", "utm_userid", "utm_cid", "utm_name", 
