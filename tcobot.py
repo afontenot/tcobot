@@ -1,12 +1,11 @@
 import re
 import requests
 
-from flask import Flask, abort, redirect
+from flask import Flask, abort, redirect, g
 from sqlitedict import SqliteDict
 from urllib.parse import urlencode, urlunparse, urlparse, parse_qs
 
 app = Flask(__name__)
-urls = SqliteDict('./urls.sqlite', autocommit=True)
 
 ua = {'User-Agent': "HTTPie/2.5.0"}
 
@@ -46,8 +45,9 @@ def clean(url):
 @app.route("/<tcourl>")
 def get(tcourl):
     if len(tcourl) == 10 and re.search('\W', tcourl) == None:
+        urls = get_urls()
         print(tcourl, len(tcourl))
-        if tcourl in urls:
+        if not urls.get(tcourl) is None:
             url = urls[tcourl]
             if url == "404":
                 abort(404)
@@ -70,3 +70,12 @@ def get(tcourl):
 def favicon():
     abort(404)
 
+def get_urls():
+    if not hasattr(g, "urls"):
+        g.urls = SqliteDict('cache/urls.sqlite', autocommit=True)
+    return g.urls
+
+@app.teardown_appcontext
+def close_sqlite_db(error):
+    if hasattr(g, "urls"):
+        g.urls.close()
